@@ -11,10 +11,13 @@ html {
 
 .cell {
 	display: inline-block;
-	width: 30px;
-	height: 30px;
+	$size : 20px;
+	width: $size;
+	height: $size;
+	line-height: $size;
+	font-size: $size * 0.75; 
 	text-align: center;
-	border: 1px solid #000;
+	border: 1px solid #ccc;
 	&.green {
 		background-color: green;
 	}
