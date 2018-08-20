@@ -1,10 +1,7 @@
 import 'babel-polyfill';
-import svg4everybody from 'svg4everybody';
-import $ from 'jquery';
+import Vue from 'vue';
+// import $ from 'jquery';
+// window.$ = $;
+// window.jQuery = $;
 
-svg4everybody();
 
-window.$ = $;
-window.jQuery = $;
-
-require('ninelines-ua-parser');

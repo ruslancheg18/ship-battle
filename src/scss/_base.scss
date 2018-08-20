@@ -7,3 +7,24 @@
 html {
 	box-sizing: border-box;
 }
+
+
+.cell {
+	display: inline-block;
+	width: 30px;
+	height: 30px;
+	text-align: center;
+	border: 1px solid #000;
+	&.green {
+		background-color: green;
+	}
+	&.blue {
+		background: blue;
+	}
+	&.red {
+		background: coral;
+	}
+	&.yellow {
+		background: yellow;
+	}
+}

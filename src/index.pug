@@ -4,4 +4,6 @@ append vars
 	//- ...
 
 block content
-	//- ...
+	#app
+		div.row(v-for="row in userField")
+			div.cell(v-for="cell in row" :class="(cell == 4) ? 'blue' : (cell == 3) ? 'red' : (cell == 2) ? 'green' : (cell == 1) ? 'yellow' : '' ") {{ cell }}
