@@ -1,7 +1,7 @@
 *,
 *::before,
 *::after {
-	box-sizing: inherit;
+	box-sizing: border-box;
 }
 
 html {
@@ -9,25 +9,33 @@ html {
 }
 
 
-.cell {
+.field {
 	display: inline-block;
-	$size : 20px;
-	width: $size;
-	height: $size;
-	line-height: $size;
-	font-size: $size * 0.75; 
-	text-align: center;
-	border: 1px solid #ccc;
-	&.green {
-		background-color: green;
-	}
-	&.blue {
-		background: blue;
-	}
-	&.red {
-		background: coral;
-	}
-	&.yellow {
-		background: yellow;
+	$size : 30px * 12;
+	width: $size + 2px;
+	height: $size + 2px;
+	border: 1px solid rgba(23, 121, 186, 0.5);
+	background: rgba(23, 121, 186, 0.5);
+	&__cell {
+		display: inline-block;
+		$size : 30px;
+		width: $size;
+		height: $size;
+		line-height: $size;
+		font-size: $size * 0.75; 
+		text-align: center;
+		&.green {
+			background-color: green;
+		}
+		&.blue {
+			background: blue;
+		}
+		&.red {
+			background: coral;
+		}
+		&.yellow {
+			background: yellow;
+		}
 	}
 }
+

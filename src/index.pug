@@ -4,6 +4,17 @@ append vars
 	//- ...
 
 block content
-	#app
-		div.row(v-for="row in addShips")
-			div.cell(v-for="cell in row" :class="(cell == 4) ? 'blue' : (cell == 3) ? 'red' : (cell == 2) ? 'green' : (cell == 1) ? 'yellow' : '' ") {{ cell }}
+	#app.grid-container
+		.grid-x.grid-margin-x.medium-margin-collapse
+			.cell.large-6
+				.field
+					div.field__row(v-for="row in compField")
+						div.field__cell(v-for="cell in row" :class="(cell == 4) ? 'blue' : (cell == 3) ? 'red' : (cell == 2) ? 'green' : (cell == 1) ? 'yellow' : '' ") {{ cell }}
+			.cell.large-6
+				.field
+					div.field__row(v-for="row in userField")
+						div.field__cell(v-for="cell in row" :class="(cell == 4) ? 'blue' : (cell == 3) ? 'red' : (cell == 2) ? 'green' : (cell == 1) ? 'yellow' : '' ") {{ cell }}
+			.cell.large-12
+				button.button(@click="newGame") Играть
+				button.button(@click="shuffleUserShips") Расставить корабли
+
