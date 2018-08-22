@@ -41,10 +41,8 @@ var app = new Vue({
 		],
 		userField: '',
 		compField: '',
-		userShipsQuantity: '',
-		computerShipsQuantity: '',
 		serviceMessage: '',
-		computerLastLuckyShots: [],
+		luckyShot: '',
 		gameSteps: {
 			newGame: false,
 			isStarting: false,
@@ -221,36 +219,119 @@ var app = new Vue({
 			}
 		},
 		resultativeShot (row, col) {
+			var shipSize,
+					me = this;
 			switch (this.userField[row][col]) {
 				case 1:
-				this.serviceMessage = 'Компьютер потопил ваш "Однопалубный" корабль';
-				for (let i = -1; i < shipSize + 1; i++) {
-					this.$set(this.userField[row - 1], (col + i), -2);
-					this.$set(this.userField[row + 1], (col + i), -2);
-				}
-				this.$set(this.userField[row], col, -2);
-				this.$set(this.userField[row], (col + shipSize), -2);
-				break; 
+				shipSize = 1;
+				this.killShip(row, col, shipSize);
+				break;
+				case 2:
+				shipSize = 2;
+				break;
+				case 3:
+				shipSize = 3;
+				break;
+				case 4:
+				shipSize = 4;
+				break;
 			}
+
+			this.luckyShotSet(row, col, shipSize);
+
+			console.log("["+this.luckyShot.row+","+this.luckyShot.col+"]");
+
+			this.computerAimingShot();
+
 			this.$set(this.userField[row], col, -3);
+		},
+		killShip(row, col, shipSize) {
+			var me = this;
+			this.luckyShot = '';
+
+			switch (shipSize) {
+				case 1:
+				this.serviceMessage = 'Компьютер потопил ваш "Однопалубный" корабль';
+				break;
+				case 2:
+				this.serviceMessage = 'Компьютер потопил ваш "Двухпалубный" корабль';
+				break;
+				case 3:
+				this.serviceMessage = 'Компьютер потопил ваш "Трехпалубный" корабль';
+				break;
+				case 4:
+				this.serviceMessage = 'Компьютер потопил ваш "Четырехпалубный" корабль';
+				break;
+			}
+
+			for (let i = -1; i < shipSize + 1; i++) {
+				this.$set(this.userField[row - 1], (col + i), -2);
+				this.$set(this.userField[row + 1], (col + i), -2);
+			}
+			this.$set(this.userField[row], col - 1, -2);
+			this.$set(this.userField[row], (col + shipSize), -2);
+
+			this.checkFinishGame (this.userField, 'Вы проиграли');
+
+			if (!this.gameSteps.isFinished) {
+				setTimeout(function () {
+					me.computerShot();
+				}, 500);
+			}
 		},
 		computerShot () {
 			let row = this.random(1, 10),
 					col = this.random(1, 10),
 					me = this;
 
-			if (this.userField[row][col] > 0) {
-				this.resultativeShot(row, col);
-			} else {
-				if (this.userField[row][col] <= -2) {
-					setTimeout(function () {
-						me.computerShot();
-					}, 500);
+			if (this.luckyShot === '') {
+				if (this.userField[row][col] > 0) {
+					this.resultativeShot(row, col);
 				} else {
-					this.serviceMessage = 'Компьютер промахнулся';
-					this.$set(this.userField[row], col, -2);
+					if (this.userField[row][col] <= -2) {
+						setTimeout(function () {
+							me.computerShot();
+						}, 500);
+					} else {
+						this.serviceMessage = 'Компьютер промахнулся';
+						this.$set(this.userField[row], col, -2);
+					}
 				}
+			} else {
+				this.computerAimingShot();
 			}
+		},
+		computerAimingShot() {
+			var index = this.luckyShot.directionsIterator,
+					cellValue = this.luckyShot.directions[index].value,
+					row = this.luckyShot.directions[index].row,
+					col = this.luckyShot.directions[index].col,
+					ship = this.luckyShot.ship,
+					size = this.luckyShot.size;
+
+			console.log(ship, size)
+
+			if (cellValue > 0) {
+				if (size >= 1) {
+					this.$set(this.userField[row], col, -3);
+					this.luckyShotSet (row, col, size);
+
+					console.log("["+this.luckyShot.row+","+this.luckyShot.col+"]");
+					this.computerAimingShot();
+				} else {
+					this.killShip(row, col, ship);
+				}
+				
+
+			} else if (cellValue <= -2) {
+				this.$set(this.luckyShot, 'directionsIterator', +1);
+				this.computerAimingShot();
+			} else {
+				this.serviceMessage = 'Компьютер промахнулся';
+				this.$set(this.userField[row], col, -2);
+				this.$set(this.luckyShot, 'directionsIterator', +1);
+			}
+
 		},
 		checkFinishGame (field, message) {
 			var me = this,
@@ -271,6 +352,37 @@ var app = new Vue({
 		},
 		exitGame () {
 			console.log('exit game')
+		},
+		luckyShotSet (row, col, shipSize) {
+			this.luckyShot = {
+				row: row,
+				col: col,
+				ship: shipSize,
+				directions: [
+					{
+						row : row + 1,
+						col: col,
+						value: this.userField[row + 1][col]
+					},
+					{
+						row : row,
+						col: col + 1,
+						value: this.userField[row][col + 1]
+					},
+					{
+						row : row - 1,
+						col: col,
+						value: this.userField[row - 1][col]
+					},
+					{
+						row : row,
+						col: col - 1,
+						value: this.userField[row][col - 1]
+					},
+				],
+				size: shipSize - 1,
+				directionsIterator: 0
+			};
 		}
-	}
+	},
 });
