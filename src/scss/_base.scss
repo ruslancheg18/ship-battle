@@ -9,6 +9,11 @@ html {
 }
 
 
+.coin {
+	background: yellow;
+	border: 1px solid #000;
+}
+
 .field {
 	display: inline-block;
 	$size : 30px * 12;
@@ -35,6 +40,12 @@ html {
 		}
 		&.yellow {
 			background: yellow;
+		}
+		&.black {
+			background: black;
+		}
+		&.gray {
+			background: gray;
 		}
 	}
 }
