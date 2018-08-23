@@ -6,18 +6,19 @@ append vars
 block content
 	#app.grid-container
 		.grid-x.grid-margin-x.medium-margin-collapse
-			.cell.large-6
+			.cell.large-6(v-for="(gamer, key, index) in gamers" :key="key" :id="key")
 				.field
-					.field__row(v-for="(row, index) in compField")
-						button.field__cell(v-for="(cellValue, cellIndex) in row" @click="userShot(row, cellValue, cellIndex)" :class="(cellValue == 4) ? 'blue' : (cellValue == 3) ? 'red' : (cellValue == 2) ? 'green' : (cellValue == 1) ? 'yellow' : (cellValue == -3) ? 'black' : (cellValue == -2) ? 'gray' : '' ") {{ cellValue }}
-			.cell.large-6
-				.field
-					div.field__row(v-for="(row, index) in userField")
-						div.field__cell(v-for="(cellValue, cellIndex) in row" :class="(cellValue == 4) ? 'blue' : (cellValue == 3) ? 'red' : (cellValue == 2) ? 'green' : (cellValue == 1) ? 'yellow' : (cellValue == -3) ? 'black' : (cellValue == -2) ? 'gray' : '' ") {{ cellValue }}
+					.field__row(v-for="(row, index) in gamer.field")
+						template(v-if="(key == 'computer')")
+							button.field__cell(v-for="(cellValue, cellIndex) in row" @click="userShot(row, cellValue, cellIndex)" :class="(cellValue == 4) ? 'blue' : (cellValue == 3) ? 'red' : (cellValue == 2) ? 'green' : (cellValue == 1) ? 'yellow' : (cellValue == -3) ? 'black' : (cellValue == -2) ? 'gray' : '' ") {{ cellValue }}
+						template(v-else)
+							.field__cell(v-for="(cellValue, cellIndex) in row" :class="(cellValue == 4) ? 'blue' : (cellValue == 3) ? 'red' : (cellValue == 2) ? 'green' : (cellValue == 1) ? 'yellow' : (cellValue == -3) ? 'black' : (cellValue == -2) ? 'gray' : '' ") {{ cellValue }}
+
+
 			.cell.large-12(v-if="gameSteps.isStarting" style="margin-top: 40px;"): .label.primary {{ serviceMessage }}
 			.cell.large-12(style="margin-top: 40px;")
 				button.button(@click="newGame" v-show="!gameSteps.newGame") Новая игра
-				button.button(@click="shuffleUserShips" v-show="gameSteps.newGame && !gameSteps.isStarting") Расставить корабли
+				button.button(@click="addShips(gamers.user)" v-show="gameSteps.newGame && !gameSteps.isStarting") Расставить корабли
 				button.button(@click="startGame" v-show="gameSteps.newGame && !gameSteps.isStarting") Начать битву
 				button.button(@click="exitGame" v-show="gameSteps.isStarting") Признать поражение
 

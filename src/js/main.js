@@ -1,48 +1,26 @@
 import './vendor';
 import Vue from 'vue/dist/vue';
+import emptyField from './vendor/empty-field-create';
+import fleetData from './vendor/fleet';
 
 var app = new Vue({
 	el: '#app',
 	data: {
-		ships : [
-			{
-				type: 'Четырехпалубный',
-				quantity: 1,
-				size: 4
+		gamers: {
+			computer: {
+				fleet: Array,
+				field: emptyField(),
+				fleetSize: 0,
+				winner: false
 			},
-			{
-				type: 'Трехпалубный',
-				quantity: 2,
-				size: 3
-			},
-			{
-				type: 'Двухпалубный',
-				quantity: 3,
-				size: 2
-			},
-			{
-				type: 'Однопалубный',
-				quantity: 4,
-				size: 1
+			user: {
+				fleet: Array,
+				field: emptyField(),
+				fleetSize: 0,
+				winner: false
 			}
-		],
-		fieldSize: 12,
-		gamers: [
-			{
-				id: 'user',
-				fleet: [],
-				field: []
-			},
-			{
-				id: 'computer',
-				fleet: '',
-				field: []
-			}
-		],
-		userField: '',
-		compField: '',
-		serviceMessage: '',
-		luckyShot: '',
+		},
+		isComputerTurn: true,
 		gameSteps: {
 			newGame: false,
 			isStarting: false,
@@ -50,124 +28,66 @@ var app = new Vue({
 		}
 	},
 	methods: {
-		createCleanField () {
-			let arr = [];
-			for (let i = 0; i < this.fieldSize; i++) {
-				this.$set(arr, i, []);
-				for (let j = 0; j < this.fieldSize; j++) {
-					this.$set(arr[i], j, 0);
-				}
-			}
-			return arr;
-		},
-		createFieldWithShips (field) {
-			var me = this;
+		addShips (gamer) {
+			gamer.field = emptyField();
+			gamer.fleetSize = 0;
+			gamer.fleet = [];
 
-			this.ships.forEach(function(item, i, arr) {
-				var quantity = item.quantity;
-				while (quantity) {
-					if (me.checkPlaceForShip(field, item)) {
-						quantity--
+
+			fleetData.forEach((ship, i, arr) => {
+				let shipsQuantity = ship.quantity;
+
+				gamer.fleetSize += ship.quantity;
+
+				if (ship.size == 4) {
+					this.createShip(gamer, ship, this.getCoordinates(ship.size));
+				} else {
+					while (shipsQuantity) {
+						var coords = this.getCoordinates(ship.size);
+						if (this.checkEmptyCell(gamer, ship, coords)) {
+							this.createShip(gamer, ship, coords);
+							shipsQuantity--
+						}
 					}
 				}
 			});
-
 		},
-		createShip (field, ship, row, col, direction) {
-			if (direction) {
-				for (let i = 0; i < ship.size; i++) {
-					this.$set(field[row], (col + i), ship.size);
+		getCoordinates(n) {
+			let row, col, direction = this.random(0,1);
+			if (direction == 1) {
+					row = this.random(1,10);
+					col = this.random(1, 10 - n);
+				} else {
+					row = this.random(1, 10 - n);
+					col = this.random(1, 10);
 				}
 
-				for (let i = -1; i < ship.size + 1; i++) {
-					this.$set(field[row - 1], (col + i), -1);
-					this.$set(field[row + 1], (col + i), -1);
-				}
-
-				this.$set(field[row], (col - 1), -1);
-				this.$set(field[row], (col + ship.size), -1);
-
-			} else {
-
-				for (let i=0; i < ship.size; i++) {
-					this.$set(field[row + i], col, ship.size);
-				}
-
-				for (let i = -1; i < ship.size + 1; i++) {
-					this.$set(field[row + i], (col - 1), -1);
-					this.$set(field[row + i], (col + 1), -1);
-				}
-
-				this.$set(field[row - 1], col, -1);
-				this.$set(field[row + ship.size], col, -1);
+			return {
+				row: row,
+				col: col,
+				direction: direction
 			}
 		},
-		checkPlaceForShip (field, ship) {
-			let row = this.random(1, 10),
-					col = this.random(1, 10),
-					direction = this.random(0, 1),
-					isAvailable = true;
+		checkEmptyCell (gamer, ship, coords) {
+			let isAvailable = true,
+					row = coords.row,
+					col = coords.col,
+					direction = coords.direction;
 
-			if (field[row][col] == 0) {
-				// Горизонт
-				if (direction) {
-					if (col + ship.size - 1 <= 10) {
-						// console.log('корабль "' + ship.type + '" влезет по горизонтали, вершина: [' + row + ',' + col + ']');
-						if (ship.size == 4) {
-							this.createShip(field, ship, row, col, direction);
-						} else {
-
-							for (let i = 0; i < ship.size; i++) {
-								if (field[row][col + i] != 0) {
-									isAvailable = false;
-									break;
-								}
-							}
-
-							for (let i = -1; i < ship.size + 1; i++) {
-								if (field[row - 1][col + i] > 0 || field[row][col + i] > 0 || field[row + 1][col + i] > 0) {
-									isAvailable = false;
-									break;
-								}
-							}
-
-
-							if (isAvailable) {
-								this.createShip(field, ship, row, col, direction);
-							}
+			if (gamer.field[row][col] == 0) {
+				if (direction == 1) {
+					for (let i = -1; i < ship.size + 1; i++) {
+						if (gamer.field[row - 1][col + i] > 0 || gamer.field[row][col + i] > 0 || gamer.field[row + 1][col + i] > 0) {
+							isAvailable = false;
+							break;
 						}
-					} else {
-						// console.log('корабль "' + ship.type + '" не влезет по горизонтали, вершина: [' + row + ',' + col + ']');
-						isAvailable = false;
 					}
 				} else {
-					if (row + ship.size - 1 <= 10) {
-						// console.log('корабль "' + ship.type + '" влезет по вертикали, вершина: [' + row + ',' + col + ']');
-						if (ship.size == 4) {
-							this.createShip(field, ship, row, col, direction);
-						} else {
-
-							for (let i = 0; i < ship.size; i++) {
-								if (field[row + i][col] != 0) {
-									isAvailable = false;
-									break;
-								}
-							}
-
-							for (let i = -1; i < ship.size + 1; i++) {
-								if (field[row + i][col + 1] > 0 || field[row + i][col] > 0 || field[row + i][col - 1] > 0) {
-									isAvailable = false;
-									break;
-								}
-							}
-
-							if (isAvailable) {
-								this.createShip(field, ship, row, col, direction);
-							}
+					for (let i = -1; i < ship.size + 1; i++) {
+						if (gamer.field[row + i][col + 1] > 0 || gamer.field[row + i][col] > 0 || gamer.field[row + i][col - 1] > 0) {
+							isAvailable = false;
+							break;
 						}
-					} else {
-						// console.log('корабль "' + ship.type + '" не влезет по вертикали, вершина: [' + row + ',' + col + ']');
-						isAvailable = false;
 					}
 				}
 			} else {
@@ -176,28 +96,51 @@ var app = new Vue({
 
 			return isAvailable;
 		},
+		createShip (gamer, ship, coords) {
+			var coordinates = [],
+					row = coords.row,
+					col = coords.col,
+					direction = coords.direction;
+
+			if (direction == 1) {
+				for (let i = 0; i < ship.size; i++) {
+					this.$set(gamer.field[row], (col + i), ship.size);
+					coordinates.push([row, col + i]);
+				}
+			} else {
+				for (let i = 0; i < ship.size; i++) {
+					this.$set(gamer.field[row + i], col, ship.size);
+					coordinates.push([row + i, col]);;
+				}
+			}
+
+			gamer.fleet.push({
+				ship: ship.size,
+				coords: coordinates,
+				isAlive: true
+			});
+		},
 		random(min, max) {
-			var rand = min + Math.random() * (max + 1 - min);
-			rand = Math.floor(rand);
-			return rand;
+			var rand = min - 0.5 + Math.random() * (max - min + 1)
+					rand = Math.round(rand);
+					return rand;
 		},
 		newGame () {
-			this.compField = this.createCleanField();
-			this.userField = this.createCleanField();
-			
-			this.createFieldWithShips(this.userField);
-			this.createFieldWithShips(this.compField);
-
+			for (let key in this.gamers) {
+				this.addShips(this.gamers[key]);
+			}
 			this.$set(this.gameSteps, 'newGame', true);
 		},
-		shuffleUserShips () {
-			this.userField = this.createCleanField();
-			this.createFieldWithShips(this.userField);
-		},
 		startGame () { 
-			if (this.random(0, 1)) {
+			if (this.random(0, 1) == 1) {
+				this.isComputerTurn = false;
+			}
+
+			if (this.isComputerTurn) {
 				this.serviceMessage = 'Первым ходит компьютер';
-				this.computerShot();
+				setTimeout(() => {
+					this.computerShot();
+				}, 1000);
 			} else {
 				this.serviceMessage = 'Вы ходите первым';
 			}
@@ -205,78 +148,20 @@ var app = new Vue({
 			this.$set(this.gameSteps, 'isStarting', true);
 		},
 		userShot (row, cellValue, cellIndex) {
-			var me = this;
-			if (cellValue > 0) {
-				this.$set(row, cellIndex, -3);
-				this.serviceMessage = 'Вы попали';
-				this.checkFinishGame(this.compField, 'Вы выиграли');
-			} else {
-				this.$set(row, cellIndex, -2);
-				this.serviceMessage = 'Вы промахнулись';
-				setTimeout(function () {
-					me.computerShot();
-				}, 500);
+			if (!this.isComputerTurn) {
+				if (cellValue > 0) {
+					this.$set(row, cellIndex, -3);
+					this.checkEnemyFleetBalance(this.gamers.computer);
+				} else {
+					this.$set(row, cellIndex, -2);
+					// Выстрел компьютера
+					this.computerShot();
+				}
 			}
 		},
-		resultativeShot (row, col) {
-			var shipSize,
-					me = this;
-			switch (this.userField[row][col]) {
-				case 1:
-				shipSize = 1;
-				this.killShip(row, col, shipSize);
-				break;
-				case 2:
-				shipSize = 2;
-				break;
-				case 3:
-				shipSize = 3;
-				break;
-				case 4:
-				shipSize = 4;
-				break;
-			}
-
-			this.luckyShotSet(row, col, shipSize);
-
-			console.log("["+this.luckyShot.row+","+this.luckyShot.col+"]");
-
-			this.computerAimingShot();
-
-			this.$set(this.userField[row], col, -3);
-		},
-		killShip(row, col, shipSize) {
-			var me = this;
-			this.luckyShot = '';
-
-			switch (shipSize) {
-				case 1:
-				this.serviceMessage = 'Компьютер потопил ваш "Однопалубный" корабль';
-				break;
-				case 2:
-				this.serviceMessage = 'Компьютер потопил ваш "Двухпалубный" корабль';
-				break;
-				case 3:
-				this.serviceMessage = 'Компьютер потопил ваш "Трехпалубный" корабль';
-				break;
-				case 4:
-				this.serviceMessage = 'Компьютер потопил ваш "Четырехпалубный" корабль';
-				break;
-			}
-
-			for (let i = -1; i < shipSize + 1; i++) {
-				this.$set(this.userField[row - 1], (col + i), -2);
-				this.$set(this.userField[row + 1], (col + i), -2);
-			}
-			this.$set(this.userField[row], col - 1, -2);
-			this.$set(this.userField[row], (col + shipSize), -2);
-
-			this.checkFinishGame (this.userField, 'Вы проиграли');
-
-			if (!this.gameSteps.isFinished) {
-				setTimeout(function () {
-					me.computerShot();
-				}, 500);
+		checkEnemyFleetBalance (gamer) {
+			if (gamer.fleetSize === 0) {
+				this.gameSteps.isFinished = true;
 			}
 		},
 		computerShot () {
@@ -301,88 +186,10 @@ var app = new Vue({
 				this.computerAimingShot();
 			}
 		},
-		computerAimingShot() {
-			var index = this.luckyShot.directionsIterator,
-					cellValue = this.luckyShot.directions[index].value,
-					row = this.luckyShot.directions[index].row,
-					col = this.luckyShot.directions[index].col,
-					ship = this.luckyShot.ship,
-					size = this.luckyShot.size;
-
-			console.log(ship, size)
-
-			if (cellValue > 0) {
-				if (size >= 1) {
-					this.$set(this.userField[row], col, -3);
-					this.luckyShotSet (row, col, size);
-
-					console.log("["+this.luckyShot.row+","+this.luckyShot.col+"]");
-					this.computerAimingShot();
-				} else {
-					this.killShip(row, col, ship);
-				}
-				
-
-			} else if (cellValue <= -2) {
-				this.$set(this.luckyShot, 'directionsIterator', +1);
-				this.computerAimingShot();
-			} else {
-				this.serviceMessage = 'Компьютер промахнулся';
-				this.$set(this.userField[row], col, -2);
-				this.$set(this.luckyShot, 'directionsIterator', +1);
-			}
-
-		},
-		checkFinishGame (field, message) {
-			var me = this,
-					gameIsContinue = false;
-			outerLoop: for (let i = 0; i < field.length; i++) {
-				for (let j = 0; j < field[i].length; j++) {
-					if (field[i][j] > 0) {
-						gameIsContinue = true;
-						break outerLoop;
-					} 
-				}
-			}
-
-			if (!gameIsContinue) {
-				this.$set(this.gameSteps, 'isFinished', true);
-				this.serviceMessage = message;
-			}
-		},
 		exitGame () {
-			console.log('exit game')
+			if (!this.gameSteps.isFinished) {
+				this.serviceMessage = 'Вы проиграли'
+			}
 		},
-		luckyShotSet (row, col, shipSize) {
-			this.luckyShot = {
-				row: row,
-				col: col,
-				ship: shipSize,
-				directions: [
-					{
-						row : row + 1,
-						col: col,
-						value: this.userField[row + 1][col]
-					},
-					{
-						row : row,
-						col: col + 1,
-						value: this.userField[row][col + 1]
-					},
-					{
-						row : row - 1,
-						col: col,
-						value: this.userField[row - 1][col]
-					},
-					{
-						row : row,
-						col: col - 1,
-						value: this.userField[row][col - 1]
-					},
-				],
-				size: shipSize - 1,
-				directionsIterator: 0
-			};
-		}
-	},
+	}
 });
