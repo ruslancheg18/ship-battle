@@ -1,25 +1,25 @@
 [
 	{
-		"id" : "four",
-		"type": "Четырехпалубный",
+		"type" : "four",
+		"name": "Четырехпалубный",
 		"quantity": 1,
 		"size": 4
 	},
 	{
-		"id" : "tree",
-		"type": "Трехпалубный",
+		"type" : "tree",
+		"name": "Трехпалубный",
 		"quantity": 2,
 		"size": 3
 	},
 	{
-		"id" : "two",
-		"type": "Двухпалубный",
+		"type" : "two",
+		"name": "Двухпалубный",
 		"quantity": 3,
 		"size": 2
 	},
 	{
-		"id" : "one",
-		"type": "Однопалубный",
+		"type" : "one",
+		"name": "Однопалубный",
 		"quantity": 4,
 		"size": 1
 	}
