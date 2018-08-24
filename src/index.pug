@@ -8,11 +8,11 @@ block content
 		.grid-x.grid-margin-x.medium-margin-collapse
 			.cell.large-6(v-for="(gamer, key, index) in gamers" :key="key" :id="key")
 				.field
-					.field__row(v-for="(row, index) in gamer.field")
+					.field__row(v-for="(row, rowIndex) in gamer.field")
 						template(v-if="(key == 'computer')")
-							button.field__cell(v-for="(cellValue, cellIndex) in row" @click="userShot(row, cellIndex, cellValue)" :class="(cellValue == 4) ? 'blue' : (cellValue == 3) ? 'red' : (cellValue == 2) ? 'green' : (cellValue == 1) ? 'yellow' : (cellValue == -3) ? 'black': (cellValue == -2) ? 'coral' : (cellValue == -1) ? 'gray' : '' ") {{ cellValue }}
+							.field__cell(v-for="(cell, cellIndex) in row" @click="userShot(rowIndex, cellIndex, cell)" :class="(cell.value == 4) ? 'blue' : (cell.value == 3) ? 'red' : (cell.value == 2) ? 'green' : (cell.value == 1) ? 'yellow' : (cell.value == -3) ? 'black': (cell.value == -2) ? 'coral' : (cell.value == -1) ? 'gray' : '' ") {{ cell.value }}
 						template(v-else)
-							.field__cell(v-for="(cellValue, cellIndex) in row" :class="(cellValue == 4) ? 'blue' : (cellValue == 3) ? 'red' : (cellValue == 2) ? 'green' : (cellValue == 1) ? 'yellow' : (cellValue == -3) ? 'black': (cellValue == -2) ? 'coral' : (cellValue == -1) ? 'gray' : '' ") {{ cellValue }}
+							.field__cell(v-for="(cell, index) in row" :class="(cell.value == 4) ? 'blue' : (cell.value == 3) ? 'red' : (cell.value == 2) ? 'green' : (cell.value == 1) ? 'yellow' : (cell.value == -3) ? 'black': (cell.value == -2) ? 'coral' : (cell.value == -1) ? 'gray' : '' ") {{ cell.value }}
 
 
 			.cell.large-12(v-if="gameSteps.isStarting" style="margin-top: 40px;"): .label.primary {{ serviceMessage }}
