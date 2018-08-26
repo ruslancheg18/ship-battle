@@ -1,0 +1,19 @@
+mixin game-screen
+	section.section.game-screen
+		.game-screen__cnt
+			.game-screen__item(v-for="(gamer, key, index) in gamers" :key="key" :id="key")
+				.field
+					.field__row(v-for="(row, rowIndex) in gamer.field")
+						template(v-if="(key == 'computer')")
+							.field__cell(v-for="(cell, cellIndex) in row" v-show="(rowIndex > 0 && rowIndex < 11 && cellIndex > 0 && cellIndex < 11)" @click="userShot(rowIndex, cellIndex, cell)")
+						template(v-else)
+							.field__cell(v-for="(cell, cellIndex) in row" v-show="(rowIndex > 0 && rowIndex < 11 && cellIndex > 0 && cellIndex < 11)")
+				.person
+					.person__info
+						.person__img: img(src="/images/persons/1.png", alt="")
+						.person__name Джек воробей
+					.person__message-box
+			
+			button(type="button" @click="exitGame").button Расставить корабли
+			button(type="button" @click="exitGame").button Начать битву
+			button(type="button" @click="exitGame").button Признать поражение

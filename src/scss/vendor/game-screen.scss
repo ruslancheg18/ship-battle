@@ -1,0 +1,11 @@
+.game-screen {
+	&__cnt {
+		max-width: (980rem/16);
+		display: flex;
+		flex-wrap: wrap;
+	}
+	&__item {
+		flex: 1 50%;
+		max-width: 50%;
+	}
+}

@@ -1,0 +1,33 @@
+.start-screen {
+	position: relative;
+	background: url(../images/bgs/start.jpg) no-repeat center;
+	text-align: center;
+	&__logo {
+		width: (410rem/16 * 0.8);
+		margin: 0 auto;
+	}
+	&__title {
+		width: (1052rem/16 * 0.8);
+		margin: (55rem/16 * -1) auto (45rem/16); 
+	}
+	&__input {
+		width: (331rem/16);
+		height: (58rem/16);
+		box-shadow: 0px 0px 2rem 0px rgba(36, 22, 0, 0.59);
+		font-size: 1.5rem;
+		border: 2px solid #fff;
+		border-radius: 3px;
+		outline: none;
+		background: transparent;
+		padding: 0 0.5rem;
+		color: #fff;
+		&:focus {
+			@include placeholder {
+				opacity: 0;
+			}
+		}
+		@include placeholder {
+			text-align: center;
+		}
+	}
+}

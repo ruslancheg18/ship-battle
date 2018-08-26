@@ -1,0 +1,23 @@
+.person {
+	display: flex;
+	&__info {
+		max-width: 90px;
+		text-align: center;
+	}
+	&__img {
+		display: inline-block;
+		$size: (70rem/16);
+		width: $size;
+		height: $size;
+	}
+	&__name {
+		font-size: (18rem/16);
+		font-weight: 700;
+		color: #fff;
+	}
+	&__message-box {
+		width: (397rem/16);
+		height: (186rem/16);
+		background: url('/images/message.png') no-repeat center / contain;
+	}
+}

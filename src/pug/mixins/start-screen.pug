@@ -1,0 +1,7 @@
+mixin start-screen
+	section.section.start-screen
+		.start-screen__cnt
+			.start-screen__logo: img(src="images/logo.png", alt="logo.png")
+			.start-screen__title: img(src="images/name.png", alt="name.png")
+			input(type="text" placeholder="Твоё имя").start-screen__input
+			button(type="button" @click="newGame").button Начать игру
