@@ -125,7 +125,7 @@ gulp.task('images', () => {
 				progressive: true,
 			}),
 			$.imagemin.optipng({
-				optimizationLevel: 3,
+				optimizationLevel: 0,
 			}),
 			$.imagemin.svgo(svgoConfig()),
 		]))

@@ -6,4 +6,10 @@
 @import "sprites";
 @import "fonts";
 @import "vendor";
-@import "base";
+@import "page";
+
+@import "./vendor/start-screen";
+@import "./vendor/game-screen";
+@import "./vendor/field";
+@import "./vendor/fraction";
+@import "./vendor/person";

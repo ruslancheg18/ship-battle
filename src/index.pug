@@ -1,24 +1,14 @@
 extends pug/base
+include pug/mixins/start-screen
+include pug/mixins/choice-screen
+include pug/mixins/game-screen
 
 append vars
 	//- ...
 
 block content
-	#app.grid-container
-		.grid-x.grid-margin-x.medium-margin-collapse
-			.cell.large-6(v-for="(gamer, key, index) in gamers" :key="key" :id="key")
-				.field
-					.field__row(v-for="(row, rowIndex) in gamer.field")
-						template(v-if="(key == 'computer')")
-							.field__cell(v-for="(cell, cellIndex) in row" @click="userShot(rowIndex, cellIndex, cell)" :class="(cell.value == 4) ? 'blue' : (cell.value == 3) ? 'red' : (cell.value == 2) ? 'green' : (cell.value == 1) ? 'yellow' : (cell.value == -3) ? 'black': (cell.value == -2) ? 'coral' : (cell.value == -1) ? 'gray' : '' ") {{ cell.value }}
-						template(v-else)
-							.field__cell(v-for="(cell, index) in row" :class="(cell.value == 4) ? 'blue' : (cell.value == 3) ? 'red' : (cell.value == 2) ? 'green' : (cell.value == 1) ? 'yellow' : (cell.value == -3) ? 'black': (cell.value == -2) ? 'coral' : (cell.value == -1) ? 'gray' : '' ") {{ cell.value }}
-
-
-			.cell.large-12(v-if="gameSteps.isStarting" style="margin-top: 40px;"): .label.primary {{ serviceMessage }}
-			.cell.large-12(style="margin-top: 40px;")
-				button.button(@click="newGame" v-show="!gameSteps.newGame") Новая игра
-				button.button(@click="addShips(gamers.user)" v-show="gameSteps.newGame && !gameSteps.isStarting") Расставить корабли
-				button.button(@click="startGame" v-show="gameSteps.newGame && !gameSteps.isStarting") Начать битву
-				button.button(@click="exitGame" v-show="gameSteps.isStarting") Признать поражение
+	#app.app-wrapper
+		//- +start-screen
+		//- +choice-screen
+		+game-screen
 
