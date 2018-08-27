@@ -1,11 +1,12 @@
 .game-screen {
 	&__cnt {
-		max-width: (980rem/16);
+		max-width: (1024rem/16);
 		display: flex;
 		flex-wrap: wrap;
+		justify-content: space-between;
 	}
 	&__item {
 		flex: 1 50%;
-		max-width: 50%;
+		max-width: (461rem/16);
 	}
 }

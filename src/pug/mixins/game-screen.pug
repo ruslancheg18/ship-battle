@@ -2,18 +2,28 @@ mixin game-screen
 	section.section.game-screen
 		.game-screen__cnt
 			.game-screen__item(v-for="(gamer, key, index) in gamers" :key="key" :id="key")
-				.field
+				.fraction
+					.fraction__img: img(src="/images/fractions/flag_pirates.png", alt="")
+					.fraction__name Пираты
+				.field(:class="'field--'+key")
 					.field__row(v-for="(row, rowIndex) in gamer.field")
 						template(v-if="(key == 'computer')")
-							.field__cell(v-for="(cell, cellIndex) in row" v-show="(rowIndex > 0 && rowIndex < 11 && cellIndex > 0 && cellIndex < 11)" @click="userShot(rowIndex, cellIndex, cell)")
+							.field__cell(v-for="(cell, cellIndex) in row" 
+													v-show="(rowIndex > 0 && rowIndex < 11 && cellIndex > 0 && cellIndex < 11)"
+													:class="cell.class"
+													@click="userShot(rowIndex, cellIndex, cell)")
 						template(v-else)
-							.field__cell(v-for="(cell, cellIndex) in row" v-show="(rowIndex > 0 && rowIndex < 11 && cellIndex > 0 && cellIndex < 11)")
-				.person
-					.person__info
-						.person__img: img(src="/images/persons/1.png", alt="")
-						.person__name Джек воробей
-					.person__message-box
+							.field__cell(v-for="(cell, cellIndex) in row" 
+														v-show="(rowIndex > 0 && rowIndex < 11 && cellIndex > 0 && cellIndex < 11)"
+														:class="cell.class" 
+														:style="{backgroundPosition: ('0px', cell.index * -40 + 'px')}")
+				.person(:class="(gamer.turn) ? 'is-active' : ''")
+					.person__img: img(src="/images/persons/jack.png", alt="")
+					.person__message-box {{ gamer.serviceMessage }}
 			
-			button(type="button" @click="exitGame").button Расставить корабли
-			button(type="button" @click="exitGame").button Начать битву
-			button(type="button" @click="exitGame").button Признать поражение
+		
+			template(v-if="!gameSteps.isStarting")
+				button(type="button" @click="shuffleShips").button Расставить корабли
+				button(type="button" @click="startGame").button Начать битву
+			button(type="button" @click="exitGame" v-else).button Признать поражение
+			

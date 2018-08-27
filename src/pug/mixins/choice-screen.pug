@@ -1,2 +1,13 @@
 mixin choice-screen
 	section.section.choice-screen
+		.choice-screen__cnt
+			.choice-screen__item(v-for="(fraction, key, index) in fractions"
+														@click="fractionChoice(fraction)")
+				.fraction.fraction--choice
+					.fraction__img: img(:src="'/images/fractions/flag_'+key+'.png'", alt="")
+					.fraction__name {{fraction.name}}
+				.choice-screen__person(v-for="(person, index) in fraction.persons"
+								:class="'choice-screen__person--'+(index+1)"
+								v-show="gameSteps.fractionIsChoiced"
+								@click="personChoice(fraction, person)")
+					.person: .person__img.person__img--big: img(:src="'/images/persons/'+person+'.png'", alt="")

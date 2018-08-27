@@ -1,3 +1,23 @@
 .fraction {
 	display: flex;
+	align-items: center;
+	&--choice {
+		flex-direction: column;
+		justify-content: flex-start;
+		max-width: (190rem/16);
+		& .fraction__name {
+			text-align: center;
+			margin-left: 0;
+			margin-top: 3rem;
+		}
+	}
+	&__img {
+		height: (104rem/16);
+	}
+	&__name {
+		font-size: 1.5rem;
+		color: #f5a824;
+		font-weight: 700;
+		margin-left: 3rem;
+	}
 }

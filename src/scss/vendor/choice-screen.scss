@@ -1,0 +1,47 @@
+.choice-screen {
+	&__cnt {
+		$size: (600rem/16);
+		width: $size;
+		height: $size;
+		position: relative;
+		border-radius: 50%;
+		// overflow: hidden;
+		border: 1px solid #f5a824;
+		display: flex;
+		position: relative;
+	}
+	&__item {
+		display: flex;
+		flex: 1 50%;
+		align-items: center;
+		justify-content: center;
+		flex-wrap: wrap;
+		cursor: pointer;
+		&:hover {
+			background-color: rgba(245, 168, 36, 0.25);
+		}
+	}
+	&__person {
+		position: absolute;
+		&--1 {
+			top: (-70rem/16);
+			left: 50%;
+			transform: translateX(-50%);
+		}
+		&--2 {
+			bottom: (-70rem/16);
+			left: 50%;
+			transform: translateX(-50%);
+		}
+		&--3 {
+			top: 50%;
+			transform: translateY(-50%);
+			left: (-70rem/16);
+		}
+		&--4 {
+			top: 50%;
+			transform: translateY(-50%);
+			right: (-70rem/16);
+		}
+	}
+}

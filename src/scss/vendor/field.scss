@@ -5,8 +5,16 @@
 	justify-content: flex-end;
 	width: (461rem/16);
 	height: (456rem/16);
-	background: url('/images/field.png') no-repeat center ;
+	background: url('/images/field.png') no-repeat center / contain;
 	padding: 0 4px 2px 0;
+	&--computer {
+		& .field__cell {
+			cursor: pointer;
+			&:hover {
+				background-color: rgba(255, 255, 255, 0.75);
+			}
+		}
+	}
 	&__row {
 		width: (418rem/16);
 		display: flex;
@@ -21,5 +29,38 @@
 		height: $size;
 		display: inline-block;
 		vertical-align: top;
+		background-repeat: no-repeat;
+		background-position: center;
+		// background-size: $size $size;
+		&.vertical {
+			transform: rotate(90deg);
+		}
+		&.large {
+			background-image: url('/images/cell/4.png');
+		}
+		&.big {
+			background-image: url('/images/cell/3.png');
+		}
+		&.medium {
+			background-image: url('/images/cell/2.png');
+		}
+		&.small {
+			background-image: url('/images/cell/1.png');
+		}
+		&.fill,
+		&.cross,
+		&.slip {
+			pointer-events: none;
+			background-position: center !important;
+		}
+		&.fill {
+			background-image: url('/images/cell/fill.png');
+		}
+		&.cross {
+			background-image: url('/images/cell/cross.png');
+		}
+		&.slip {
+			background-image: url('/images/cell/slip.png');
+		}
 	}
 }

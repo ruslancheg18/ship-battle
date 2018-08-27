@@ -19,11 +19,31 @@ var app = new Vue({
 			},
 			user: {}
 		},
-		isComputerTurn: true,
 		gameSteps: {
 			newGame: false,
+			isChoiced: false,
+			fractionIsChoiced: false,
+			personsIsChoiced: false,
 			isStarting: false,
 			isFinished: false
+		},
+		fractions: {
+			pirates: {
+				persons: ['jack', 'elizabeth', 'barbossa', 'turner'],
+				name: 'Пираты Карибского моря',
+				pharses: {
+					slip: ['Черт побери!', 'Повезет в следующий раз...', 'Промах.'],
+					hitting: ['Есть!', 'Пора отпраздновать это!', 'Удача на нашей стороне! Враг вот вот дрогнет! Стреляйте!']
+				},
+			},
+			company: {
+				persons: ['beckett', 'jones'],
+				name: 'Ост-Индская торговая компания',
+				pharses: {
+					slip: ['Наводчикам надо стараться усерднее', 'Кому-то придется продлить службу ещё на 10 лет', 'Досада!'],
+					hitting: ['Попадание зафиксировано. Нам нужен ещё один точный выстрел.', 'Наша эскадра непотляема! Огонь из всех орудий!', 'Готовьсь! Цельсь! Пли!']
+				}
+			}
 		}
 	},
 	beforeMount() {
@@ -31,7 +51,10 @@ var app = new Vue({
 			this.$set(this.gamers[gamer], 'field', emptyField());
 			this.$set(this.gamers[gamer], 'fleetSize', 0);
 			this.$set(this.gamers[gamer], 'isWinner', false);
-			this.$set(this.gamers[gamer], 'serviceMessage', String);
+			this.$set(this.gamers[gamer], 'serviceMessage', '');
+			this.$set(this.gamers[gamer], 'turn', false);
+			this.$set(this.gamers[gamer], 'fraction', '');
+			this.$set(this.gamers[gamer], 'person', '');
 		}
 	},
 	methods: {
@@ -39,20 +62,27 @@ var app = new Vue({
 			for (let key in this.gamers) {
 				this.addShips(this.gamers[key]);
 			}
-			this.$set(this.gameSteps, 'newGame', true);
+			this.gameSteps.newGame = true;
 		},
-		startGame () { 
+		fractionChoice() {
+			this.gameSteps.fractionIsChoiced = true;
+		},
+		personChoice() {
+			this.gameSteps.personsIsChoiced = true;
+		},
+ 		startGame () { 
 			if (this.random(0, 1) == 1) {
-				this.isComputerTurn = false;
+				this.gamers.computer.turn = false;
 			}
 
-			if (this.isComputerTurn) {
-				this.serviceMessage = 'Первым ходит компьютер';
+			if (this.gamers.computer.turn) {
+				this.gamers.computer.serviceMessage = 'Я хожу первым';
 				setTimeout(() => {
 					this.computerShot();
-				}, 1000);
+				}, 2000);
 			} else {
-				this.serviceMessage = 'Вы ходите первым';
+				this.gamers.user.turn = true;
+				this.gamers.user.serviceMessage = 'Капитан, наши корабли уже на позиции! Стреляйте!';
 			}
 
 			this.$set(this.gameSteps, 'isStarting', true);
@@ -61,6 +91,9 @@ var app = new Vue({
 			if (!this.gameSteps.isFinished) {
 				this.serviceMessage = 'Вы проиграли'
 			}
+		},
+		shuffleShips () {
+			this.addShips(this.gamers.user);
 		},
 		random(min, max) {
 			var rand = min - 0.5 + Math.random() * (max - min + 1)
@@ -137,48 +170,80 @@ var app = new Vue({
 			var row = coords.row,
 					col = coords.col,
 					direction = coords.direction,
-					coords = [];
+					cls = '';
+
+			if (gamer == this.gamers.user) {
+				switch (ship.size) {
+					case 4:
+					cls = 'large';
+					break;
+					case 3:
+					cls = 'big';
+					break;
+					case 2:
+					cls = 'medium';
+					break;
+					case 1:
+					cls = 'small';
+					break; 
+				}
+			}
 
 			if (direction == 1) {
 				for (let i = 0; i < ship.size; i++) {
-					this.$set(gamer.field[row], (col + i), {value: ship.size, direction: direction, index: i});
-					coords.push([row, col + i]);
+					this.$set(gamer.field[row], (col + i), {value: ship.size, class: cls, index: i, direction: direction});
 				}
 			} else {
+				cls = cls + ' vertical';
 				for (let i = 0; i < ship.size; i++) {
-					this.$set(gamer.field[row + i], col, {value: ship.size, direction: direction, index: i});
-					coords.push([row, col + i]);
+					this.$set(gamer.field[row + i], col, {value: ship.size, class: cls, index: i, direction: direction});
 				}
 			}
 		},
-
 		userShot (row, col, info) {
 			let value = info.value,
-					computer = this.gamers.computer;
+					computer = this.gamers.computer,
+					user = this.gamers.user;
 
-
-			if (!this.isComputerTurn) {
+			if (user.turn) {
 				if (value > 0) {
 
 					if (value == 1) {
 						this.oneDeksShipKill(computer, row, col);
+					} else {
+						this.checkAroundCells(computer, row, col);
 					}
 
-					this.$set(computer.field[row], col, {value: -3});
+					this.$set(computer.field[row], col, {value: -3, class: 'cross'});
 					this.checkFinishGame(computer);
 					this.setExceptionsCells(computer, row, col);
 
 				} else {
-					this.$set(computer.field[row], col, {value: -1});
-					this.isComputerTurn = true;
+					this.$set(computer.field[row], col, {value: -1, class: 'slip'});
+					computer.turn = true;
+					user.turn = false;
 
-					this.serviceMessage = 'Промах';
-					
+					this.gamers.user.serviceMessage = 'Промах';
+
 					setTimeout(() => {
 						this.computerShot();
 					}, 500);
 					
 				}
+			}
+		},
+		checkAroundCells(enemy, row, col) {
+			let killShip = false;
+
+			if (enemy.field[row + 1][col] > 0 || enemy.field[row - 1][col] > 0 || enemy.field[row][col + 1] > 0 || enemy.field[row][col - 1] > 0) {
+				killShip = false;
+			}
+
+
+			if (killShip) {
+				this.gamers.user.serviceMessage = 'Мы отправили их корабль на корм рыбам';
+			} else {
+				this.gamers.user.serviceMessage = 'Попадание';
 			}
 		},
 		getCoordinateForShoot() {
@@ -193,10 +258,10 @@ var app = new Vue({
 			return coords;
 		},
 		setExceptionsCells(enemy, row, col) {
-			this.$set(enemy.field[row + 1], (col + 1), {value: -2});
-			this.$set(enemy.field[row + 1], (col - 1), {value: -2});
-			this.$set(enemy.field[row - 1], (col + 1), {value: -2});
-			this.$set(enemy.field[row - 1], (col - 1), {value: -2});
+			this.$set(enemy.field[row + 1], (col + 1), {value: -2, class: 'fill'});
+			this.$set(enemy.field[row + 1], (col - 1), {value: -2, class: 'fill'});
+			this.$set(enemy.field[row - 1], (col + 1), {value: -2, class: 'fill'});
+			this.$set(enemy.field[row - 1], (col - 1), {value: -2, class: 'fill'});
 		},
 		setShootMatrixAround(row, col) {
 			var computer = this.gamers.computer,
@@ -260,34 +325,37 @@ var app = new Vue({
 				}
 
 				if (luckyShots.totalHits >= value) {
-					this.serviceMessage = 'Компьютер потопил корабль';
+					comp.serviceMessage = 'Мы отправили их корабль на корм рыбам';
 					this.killShip(comp, user, row, col, value);
 				} else {
-					this.serviceMessage = 'Компьютер попал';
+					comp.serviceMessage = 'Попадание';
 					this.setShootMatrixAround(row, col);
 				}
 
-				this.$set(user.field[row], col, {value: -3});
+				this.$set(user.field[row], col, {value: -3, class: 'cross'});
 
 				if (!this.gameSteps.isFinished) {
 					setTimeout(() => {
 						this.computerShot();
-					}, 1000);
+					}, 2000);
 				}
 
 			} else if (value <= -1) {
 				this.computerShot();
 			} else {
-				this.$set(user.field[row], col, {value: -1});
-				this.isComputerTurn = false;
-				this.serviceMessage = 'Компьютер промазал';
+				this.$set(user.field[row], col, {value: -1, class: 'slip'});
+				setTimeout(() => {
+					comp.turn = false;
+					user.turn = true;
+				}, 1000);
+				comp.serviceMessage = 'Промах';
 			}
 		},
 		oneDeksShipKill(enemy, row, col) {
-			this.$set(enemy.field[row + 1], (col), {value: -2});
-			this.$set(enemy.field[row - 1], (col), {value: -2});
-			this.$set(enemy.field[row], (col + 1), {value: -2});
-			this.$set(enemy.field[row], (col - 1), {value: -2});
+			this.$set(enemy.field[row + 1], (col), {value: -2, class: 'fill'});
+			this.$set(enemy.field[row - 1], (col), {value: -2, class: 'fill'});
+			this.$set(enemy.field[row], (col + 1), {value: -2, class: 'fill'});
+			this.$set(enemy.field[row], (col - 1), {value: -2, class: 'fill'});
 		},
 		killShip(user, enemy, row, col, value) {
 			var col1, row1, col2, row2;
@@ -301,11 +369,11 @@ var app = new Vue({
 				col2 = user.luckyShots.x0 + user.luckyShots.ky * user.luckyShots.totalHits;
 
 				if (enemy.field[row1][col1] == '') {
-					this.$set(enemy.field[row1], col1, {value: -2});
+					this.$set(enemy.field[row1], col1, {value: -2, class: 'fill'});
 				}
 				
 				if (enemy.field[row2][col2] == '') {
-					this.$set(enemy.field[row2], col2, {value: -2});
+					this.$set(enemy.field[row2], col2, {value: -2, class: 'fill'});
 				}
 			}
 
@@ -317,9 +385,9 @@ var app = new Vue({
 			if (gamer.fleetSize === 0) {
 				this.gameSteps.isFinished = true;
 				if (gamer == 'user') {
-					this.serviceMessage = 'Вы проиграли'
+					this.gamers.user.serviceMessage = 'Мы выиграли';
 				} else {
-					this.serviceMessage = 'Вы выиграли'
+					this.gamers.user.serviceMessage = 'Мы проиграли';
 				}
 			}
 		},

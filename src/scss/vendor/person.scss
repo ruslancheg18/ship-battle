@@ -1,23 +1,69 @@
 .person {
 	display: flex;
-	&__info {
-		max-width: 90px;
-		text-align: center;
+	align-items: center;
+	&.is-active {
+		& .person__img:after {
+			animation: pulse 1s infinite;
+		}
+		& .person__message-box {
+			opacity: 1;
+		}
 	}
 	&__img {
 		display: inline-block;
 		$size: (70rem/16);
 		width: $size;
 		height: $size;
+		box-shadow: 0px 1px 2rem 0px rgba(32, 32, 32, 0.74);
+		border-radius: 50%;
+		position: relative;
+		&--big {
+			$size: (100rem/16);
+			width: $size;
+			height: $size;
+		}
+		img {
+			position: relative;
+			z-index: 1;
+		}
+
+		&:after {
+			content: '';
+			position: absolute;
+			width: 100%;
+			height: 100%;
+			transform-origin: 50% 50%;
+			border-radius: 50%;
+			border: 1px solid #f5a824;
+			top: 50%;
+			left: 50%;
+			opacity: 0;
+			transform: translate(-50%, -50%);
+		}
 	}
-	&__name {
-		font-size: (18rem/16);
-		font-weight: 700;
-		color: #fff;
-	}
+	// &__name {
+	// 	font-size: (18rem/16);
+	// 	font-weight: 700;
+	// 	color: #fff;
+	// 	position: relative;
+	// 	z-index: 1;
+	// }
 	&__message-box {
+		opacity: 0;
 		width: (397rem/16);
 		height: (186rem/16);
 		background: url('/images/message.png') no-repeat center / contain;
+		font-size: 1.35rem;
+		padding: (52rem/16) (59rem/16) 0 (55rem/16);
+		font-weight: 700;
+	}
+}
+
+@keyframes pulse {
+	100% {
+		$size: (85rem/16);
+		width: $size;
+		height: $size;
+		opacity: 1
 	}
 }
