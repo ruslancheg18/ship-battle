@@ -9,13 +9,6 @@ var app = new Vue({
 		gamers: {
 			computer: {
 				shootMatrixAround: [],
-				luckyShots: {
-					totalHits: 0,
-					firstHit: [],
-					nextHit: [],
-					kx: 0,
-					ky: 0
-				}
 			},
 			user: {}
 		},
@@ -27,16 +20,18 @@ var app = new Vue({
 			isStarting: false,
 			isFinished: false
 		},
-		fractions: {
-			pirates: {
+		fractions: [
+			{
+				id: 'pirates',
 				persons: ['jack', 'elizabeth', 'barbossa', 'turner'],
 				name: 'Пираты Карибского моря',
 				pharses: {
 					slip: ['Черт побери!', 'Повезет в следующий раз...', 'Промах.'],
 					hitting: ['Есть!', 'Пора отпраздновать это!', 'Удача на нашей стороне! Враг вот вот дрогнет! Стреляйте!']
-				},
+				}
 			},
-			company: {
+			{
+				id: 'company',
 				persons: ['beckett', 'jones'],
 				name: 'Ост-Индская торговая компания',
 				pharses: {
@@ -44,7 +39,7 @@ var app = new Vue({
 					hitting: ['Попадание зафиксировано. Нам нужен ещё один точный выстрел.', 'Наша эскадра непотляема! Огонь из всех орудий!', 'Готовьсь! Цельсь! Пли!']
 				}
 			}
-		}
+		]
 	},
 	beforeMount() {
 		for (let gamer in this.gamers) {
@@ -55,6 +50,17 @@ var app = new Vue({
 			this.$set(this.gamers[gamer], 'turn', false);
 			this.$set(this.gamers[gamer], 'fraction', '');
 			this.$set(this.gamers[gamer], 'person', '');
+			this.$set(this.gamers[gamer], 'luckyShots', {
+					totalHits: 0,
+					firstHit: [],
+					nextHit: [],
+					kx: 0,
+					ky: 0
+				});
+		}
+
+		for (let i = 0; i < this.fractions.length; i++) {
+			this.$set(this.fractions[i], 'isActive', false);
 		}
 	},
 	methods: {
@@ -64,13 +70,31 @@ var app = new Vue({
 			}
 			this.gameSteps.newGame = true;
 		},
-		fractionChoice() {
+		fractionChoice(fraction, index) {
+			let user = this.gamers.user,
+					comp = this.gamers.computer;
+
+		for (let i = 0; i < this.fractions.length; i++) {
+			this.fractions[i].isActive = false;
+			if (i != index) {
+				comp.fraction = this.fractions[i].id;
+			}
+		}
+
+
+			fraction.isActive = true;
+
+			user.fraction = fraction.id;
+
 			this.gameSteps.fractionIsChoiced = true;
 		},
-		personChoice() {
+		personChoice(fraction, person) {
+			let user = this.gamers.user,
+					comp = this.gamers.computer;
+
 			this.gameSteps.personsIsChoiced = true;
 		},
- 		startGame () { 
+		startGame () { 
 			if (this.random(0, 1) == 1) {
 				this.gamers.computer.turn = false;
 			}
@@ -126,10 +150,10 @@ var app = new Vue({
 		},
 		createCoordinates(n) {
 			let coords = {};
-			coords.direction = this.random(0,1);
+			coords.direction = Math.abs(this.random(0, 1));
 
 			if (coords.direction == 1) {
-					coords.row = this.random(1,10);
+					coords.row = this.random(1, 10);
 					coords.col = this.random(1, 10 - n);
 				} else {
 					coords.row = this.random(1, 10 - n);
@@ -200,92 +224,6 @@ var app = new Vue({
 				}
 			}
 		},
-		userShot (row, col, info) {
-			let value = info.value,
-					computer = this.gamers.computer,
-					user = this.gamers.user;
-
-			if (user.turn) {
-				if (value > 0) {
-
-					if (value == 1) {
-						this.oneDeksShipKill(computer, row, col);
-					} else {
-						this.checkAroundCells(computer, row, col);
-					}
-
-					this.$set(computer.field[row], col, {value: -3, class: 'cross'});
-					this.checkFinishGame(computer);
-					this.setExceptionsCells(computer, row, col);
-
-				} else {
-					this.$set(computer.field[row], col, {value: -1, class: 'slip'});
-					computer.turn = true;
-					user.turn = false;
-
-					this.gamers.user.serviceMessage = 'Промах';
-
-					setTimeout(() => {
-						this.computerShot();
-					}, 500);
-					
-				}
-			}
-		},
-		checkAroundCells(enemy, row, col) {
-			let killShip = false;
-
-			if (enemy.field[row + 1][col] > 0 || enemy.field[row - 1][col] > 0 || enemy.field[row][col + 1] > 0 || enemy.field[row][col - 1] > 0) {
-				killShip = false;
-			}
-
-
-			if (killShip) {
-				this.gamers.user.serviceMessage = 'Мы отправили их корабль на корм рыбам';
-			} else {
-				this.gamers.user.serviceMessage = 'Попадание';
-			}
-		},
-		getCoordinateForShoot() {
-			let computer = this.gamers.computer,
-					coords;
-
-			if (computer.shootMatrixAround.length > 0) {
-				coords = computer.shootMatrixAround.pop();
-			} else {
-				coords = [this.random(1, 10), this.random(1, 10)];
-			}
-			return coords;
-		},
-		setExceptionsCells(enemy, row, col) {
-			this.$set(enemy.field[row + 1], (col + 1), {value: -2, class: 'fill'});
-			this.$set(enemy.field[row + 1], (col - 1), {value: -2, class: 'fill'});
-			this.$set(enemy.field[row - 1], (col + 1), {value: -2, class: 'fill'});
-			this.$set(enemy.field[row - 1], (col - 1), {value: -2, class: 'fill'});
-		},
-		setShootMatrixAround(row, col) {
-			var computer = this.gamers.computer,
-					user = this.gamers.user;
-
-			// корабль расположен вертикально
-			if (row > 1 && computer.luckyShots.ky == 0) computer.shootMatrixAround.push([row - 1, col]);
-			if (row < 10 && computer.luckyShots.ky == 0) computer.shootMatrixAround.push([row + 1, col]);
-			// корабль расположен горизонтально
-			if (col > 1 && computer.luckyShots.kx == 0) computer.shootMatrixAround.push([row, col - 1]);
-			if (col < 10 && computer.luckyShots.kx == 0) computer.shootMatrixAround.push([row, col + 1]);
-
-			this.filterShootMatrixes(computer.shootMatrixAround);
-		},
-		filterShootMatrixes(matrix) {
-			for (var i = matrix.length - 1; i >= 0; i--) {
-				let x = matrix[i][0],
-						y = matrix[i][1];
-
-				if (this.gamers.user.field[x][y].value <= -1) {
-					matrix.splice(i,1);
-				}
-			}
-		},
 		computerShot() {
 			let user = this.gamers.user,
 					comp = this.gamers.computer,
@@ -318,14 +256,14 @@ var app = new Vue({
 							// Добавляем в счастливые выстрелы второе попадание
 						luckyShots.nextHit = [row, col]
 
-						luckyShots.kx = (Math.abs(luckyShots.firstHit[0] - luckyShots.nextHit[0]) == 1) ? 1 : 0;
-						luckyShots.ky = (Math.abs(luckyShots.firstHit[1] - luckyShots.nextHit[1]) == 1) ? 1 : 0;
+						luckyShots.ky = (Math.abs(luckyShots.firstHit[0] - luckyShots.nextHit[0]) == 1) ? 1 : 0;
+						luckyShots.kx = (Math.abs(luckyShots.firstHit[1] - luckyShots.nextHit[1]) == 1) ? 1 : 0;
+
 					}
 					
 				}
 
 				if (luckyShots.totalHits >= value) {
-					comp.serviceMessage = 'Мы отправили их корабль на корм рыбам';
 					this.killShip(comp, user, row, col, value);
 				} else {
 					comp.serviceMessage = 'Попадание';
@@ -351,11 +289,142 @@ var app = new Vue({
 				comp.serviceMessage = 'Промах';
 			}
 		},
+		userShot (row, col, info) {
+			let value = info.value,
+					direction = info.direction,
+					index = info.index,
+					comp = this.gamers.computer,
+					user = this.gamers.user;
+
+			if (user.turn) {
+				if (value > 0) {
+					if (direction == 1) {
+						user.luckyShots.ky = 0;
+						user.luckyShots.kx = 1;
+					} else {
+						user.luckyShots.ky = 1;
+						user.luckyShots.kx = 0;
+					}
+
+					if (this.checkLifeCellsOfShip(user, comp, row, col)) {
+
+						user.luckyShots.x0 = col - index * user.luckyShots.kx;
+						user.luckyShots.y0 = row - index * user.luckyShots.ky;
+						user.luckyShots.totalHits = value;
+
+						this.killShip(user, comp, row, col, value);
+
+					} else {
+						user.serviceMessage = 'Попадание';
+					}
+
+					this.$set(comp.field[row], col, {value: -3, class: 'cross'});
+					this.checkFinishGame(comp);
+					this.setExceptionsCells(comp, row, col);
+
+				} else {
+					this.$set(comp.field[row], col, {value: -1, class: 'slip'});
+					comp.turn = true;
+					user.turn = false;
+
+					this.gamers.user.serviceMessage = 'Промах';
+
+					setTimeout(() => {
+						this.computerShot();
+					}, 500);
+					
+				}
+			}
+		},
+		checkLifeCellsOfShip(user, enemy, row, col) {
+			let noLivingCells = true,
+					shipSize = enemy.field[row][col].value,
+					index = enemy.field[row][col].index,
+					kx = user.luckyShots.kx,
+					ky = user.luckyShots.ky,
+					y0 = row - (index*ky),
+					x0 = col - (index*kx);
+
+			if (shipSize > 1) {
+				for (let i = 0; i < shipSize; i++) {
+					if (y0 + i * ky == row && x0 + i * kx == col) continue;
+					if (enemy.field[y0 + i * ky][x0 + i * kx].value > 0) {
+						noLivingCells = false;
+						break;
+					}
+				}
+			}
+
+			return noLivingCells;
+		},
+		getCoordinateForShoot() {
+			let computer = this.gamers.computer,
+					coords;
+
+			if (computer.shootMatrixAround.length > 0) {
+				coords = computer.shootMatrixAround.pop();
+			} else {
+				coords = [this.random(1, 10), this.random(1, 10)];
+			}
+			return coords;
+		},
+		setExceptionsCells(enemy, row, col) {
+			let data = {value: -2, class: 'fill'};
+
+			if(enemy.field[row + 1][col + 1] == '') {
+				this.$set(enemy.field[row + 1], (col + 1), data);
+			}
+			if(enemy.field[row + 1][col - 1] == '') {
+				this.$set(enemy.field[row + 1], (col - 1), data);
+			}
+			if(enemy.field[row - 1][col + 1] == '') {
+				this.$set(enemy.field[row - 1], (col + 1), data);
+			}
+			if(enemy.field[row - 1][col - 1] == '') {
+				this.$set(enemy.field[row - 1], (col - 1), data);
+			}
+		},
+		setShootMatrixAround(row, col) {
+			var computer = this.gamers.computer,
+					user = this.gamers.user;
+
+			// корабль расположен вертикально
+			if (row > 1 && computer.luckyShots.kx == 0) computer.shootMatrixAround.push([row - 1, col]);
+			if (row < 10 && computer.luckyShots.kx == 0) computer.shootMatrixAround.push([row + 1, col]);
+			// корабль расположен горизонтально
+			if (col > 1 && computer.luckyShots.ky == 0) computer.shootMatrixAround.push([row, col - 1]);
+			if (col < 10 && computer.luckyShots.ky == 0) computer.shootMatrixAround.push([row, col + 1]);
+
+			this.filterShootMatrixes(computer.shootMatrixAround);
+		},
+		filterShootMatrixes(matrix) {
+			for (var i = matrix.length - 1; i >= 0; i--) {
+				let x = matrix[i][0],
+						y = matrix[i][1];
+
+				if (this.gamers.user.field[x][y].value <= -1) {
+					matrix.splice(i,1);
+				}
+			}
+		},
 		oneDeksShipKill(enemy, row, col) {
-			this.$set(enemy.field[row + 1], (col), {value: -2, class: 'fill'});
-			this.$set(enemy.field[row - 1], (col), {value: -2, class: 'fill'});
-			this.$set(enemy.field[row], (col + 1), {value: -2, class: 'fill'});
-			this.$set(enemy.field[row], (col - 1), {value: -2, class: 'fill'});
+			let data = {value: -2, class: 'fill'};
+
+			if (enemy.field[row + 1][col] == '') {
+				this.$set(enemy.field[row + 1], (col), data);
+			}
+
+			if (enemy.field[row - 1][col] == '') {
+				this.$set(enemy.field[row - 1], (col), data);
+			}
+
+			if (enemy.field[row][col + 1] == '') {
+				this.$set(enemy.field[row], (col + 1), data);
+			}
+
+			if (enemy.field[row][col - 1] == '') {
+				this.$set(enemy.field[row], (col - 1), data);
+			}
 		},
 		killShip(user, enemy, row, col, value) {
 			var col1, row1, col2, row2;
@@ -363,10 +432,11 @@ var app = new Vue({
 			if (value == 1) {
 				this.oneDeksShipKill(enemy, row, col);
 			} else {
-				row1 = user.luckyShots.y0 - user.luckyShots.kx;
-				col1 = user.luckyShots.x0 - user.luckyShots.ky;
-				row2 = user.luckyShots.y0 + user.luckyShots.kx * user.luckyShots.totalHits;
-				col2 = user.luckyShots.x0 + user.luckyShots.ky * user.luckyShots.totalHits;
+				row1 = user.luckyShots.y0 - user.luckyShots.ky;
+				col1 = user.luckyShots.x0 - user.luckyShots.kx;
+				row2 = user.luckyShots.y0 + user.luckyShots.ky * user.luckyShots.totalHits;
+				col2 = user.luckyShots.x0 + user.luckyShots.kx * user.luckyShots.totalHits;
+
 
 				if (enemy.field[row1][col1] == '') {
 					this.$set(enemy.field[row1], col1, {value: -2, class: 'fill'});
@@ -377,22 +447,24 @@ var app = new Vue({
 				}
 			}
 
-			this.resetLuckyShots();
+			user.serviceMessage = 'Мы отправили их корабль на корм рыбам';
+
+			this.resetLuckyShots(user);
 		},
 		checkFinishGame (gamer) {
 			gamer.fleetSize--;
 
 			if (gamer.fleetSize === 0) {
 				this.gameSteps.isFinished = true;
-				if (gamer == 'user') {
+				if (this.gamers.user.turn) {
 					this.gamers.user.serviceMessage = 'Мы выиграли';
 				} else {
 					this.gamers.user.serviceMessage = 'Мы проиграли';
 				}
 			}
 		},
-		resetLuckyShots () {
-			this.gamers.computer.luckyShots = {
+		resetLuckyShots (user) {
+			user.luckyShots = {
 				totalHits: 0,
 				firstHit: [],
 				nextHit: [],

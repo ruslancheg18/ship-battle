@@ -5,18 +5,25 @@
 		height: $size;
 		position: relative;
 		border-radius: 50%;
-		// overflow: hidden;
-		border: 1px solid #f5a824;
+		border: 2px solid #f5a824;
 		display: flex;
 		position: relative;
 	}
 	&__item {
+		$bdrs: (300rem/16);
 		display: flex;
 		flex: 1 50%;
 		align-items: center;
 		justify-content: center;
 		flex-wrap: wrap;
 		cursor: pointer;
+		&:first-child {
+			border-radius: $bdrs 0 0 $bdrs;
+		}
+		&:last-child {
+			border-radius: 0 $bdrs $bdrs 0;
+		}
+		&.is-active,
 		&:hover {
 			background-color: rgba(245, 168, 36, 0.25);
 		}

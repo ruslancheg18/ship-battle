@@ -3,8 +3,11 @@ mixin game-screen
 		.game-screen__cnt
 			.game-screen__item(v-for="(gamer, key, index) in gamers" :key="key" :id="key")
 				.fraction
-					.fraction__img: img(src="/images/fractions/flag_pirates.png", alt="")
-					.fraction__name Пираты
+					.fraction__img: img(src="'/images/fractions/flag_' + gamer.fraction + '.png'", alt="")
+					.fraction__name {{ gamer.fractions.name }}
+				.person(:class="(gamer.turn) ? 'is-active' : ''")
+					.person__img: img(src="/images/persons/jack.png", alt="")
+					.person__message-box {{ gamer.serviceMessage }}
 				.field(:class="'field--'+key")
 					.field__row(v-for="(row, rowIndex) in gamer.field")
 						template(v-if="(key == 'computer')")
@@ -17,11 +20,6 @@ mixin game-screen
 														v-show="(rowIndex > 0 && rowIndex < 11 && cellIndex > 0 && cellIndex < 11)"
 														:class="cell.class" 
 														:style="{backgroundPosition: ('0px', cell.index * -40 + 'px')}")
-				.person(:class="(gamer.turn) ? 'is-active' : ''")
-					.person__img: img(src="/images/persons/jack.png", alt="")
-					.person__message-box {{ gamer.serviceMessage }}
-			
-		
 			template(v-if="!gameSteps.isStarting")
 				button(type="button" @click="shuffleShips").button Расставить корабли
 				button(type="button" @click="startGame").button Начать битву

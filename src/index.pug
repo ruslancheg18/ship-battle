@@ -8,9 +8,9 @@ append vars
 
 block content
 	#app.app-wrapper
-		//- template(v-if="!gameSteps.newGame")
-		//- 	+start-screen
-		//- template(v-else-if="!gameSteps.isChoiced")
+		template(v-if="!gameSteps.newGame")
+			+start-screen
+		template(v-else-if="!gameSteps.isChoiced")
 			+choice-screen
-		//- template(v-else="")
-		+game-screen
+		template(v-else="!gameSteps.personsIsChoiced")
+			+game-screen

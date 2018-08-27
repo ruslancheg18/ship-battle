@@ -31,7 +31,6 @@
 		vertical-align: top;
 		background-repeat: no-repeat;
 		background-position: center;
-		// background-size: $size $size;
 		&.vertical {
 			transform: rotate(90deg);
 		}
@@ -52,6 +51,7 @@
 		&.slip {
 			pointer-events: none;
 			background-position: center !important;
+			opacity: 0.75;
 		}
 		&.fill {
 			background-image: url('/images/cell/fill.png');
