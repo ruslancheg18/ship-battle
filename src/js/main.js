@@ -20,9 +20,8 @@ var app = new Vue({
 			isStarting: false,
 			isFinished: false
 		},
-		fractions: [
-			{
-				id: 'pirates',
+		fractions: {
+			pirates: {
 				persons: ['jack', 'elizabeth', 'barbossa', 'turner'],
 				name: 'Пираты Карибского моря',
 				pharses: {
@@ -30,8 +29,7 @@ var app = new Vue({
 					hitting: ['Есть!', 'Пора отпраздновать это!', 'Удача на нашей стороне! Враг вот вот дрогнет! Стреляйте!']
 				}
 			},
-			{
-				id: 'company',
+			company: {
 				persons: ['beckett', 'jones'],
 				name: 'Ост-Индская торговая компания',
 				pharses: {
@@ -39,82 +37,143 @@ var app = new Vue({
 					hitting: ['Попадание зафиксировано. Нам нужен ещё один точный выстрел.', 'Наша эскадра непотляема! Огонь из всех орудий!', 'Готовьсь! Цельсь! Пли!']
 				}
 			}
-		]
+		},
+		finishMesssage: String
 	},
 	beforeMount() {
 		for (let gamer in this.gamers) {
 			this.$set(this.gamers[gamer], 'field', emptyField());
 			this.$set(this.gamers[gamer], 'fleetSize', 0);
-			this.$set(this.gamers[gamer], 'isWinner', false);
+			this.$set(this.gamers[gamer], 'fraction', '');
+			this.$set(this.gamers[gamer], 'fractionName', '');
+			this.$set(this.gamers[gamer], 'person', '');
+			this.$set(this.gamers[gamer], 'luckyShots', '');
 			this.$set(this.gamers[gamer], 'serviceMessage', '');
 			this.$set(this.gamers[gamer], 'turn', false);
-			this.$set(this.gamers[gamer], 'fraction', '');
-			this.$set(this.gamers[gamer], 'person', '');
-			this.$set(this.gamers[gamer], 'luckyShots', {
-					totalHits: 0,
-					firstHit: [],
-					nextHit: [],
-					kx: 0,
-					ky: 0
-				});
 		}
 
-		for (let i = 0; i < this.fractions.length; i++) {
-			this.$set(this.fractions[i], 'isActive', false);
+		for (let key in this.fractions) {
+			this.$set(this.fractions[key], 'isActive', false);
 		}
+
 	},
 	methods: {
 		newGame () {
-			for (let key in this.gamers) {
-				this.addShips(this.gamers[key]);
+			let steps = this.gameSteps;
+
+			for (let gamer in this.gamers) {
+				this.addShips(this.gamers[gamer]);
+				this.resetLuckyShots(this.gamers[gamer]);
+
+				if (steps.isFinished) {
+					this.gamers[gamer].serviceMessage = '';
+					this.gamers[gamer].turn = false;
+				}
 			}
-			this.gameSteps.newGame = true;
+
+			steps.newGame = true;
+			if (steps.isStarting) {
+				steps.isStarting = false;
+			}
+
+			if (steps.isFinished) {
+				steps.isFinished = false;
+			}
+
+			this.gamers.user.serviceMessage = 'Всем приготовиться к бою!';
 		},
-		fractionChoice(fraction, index) {
+		fractionChoice(fraction) {
 			let user = this.gamers.user,
 					comp = this.gamers.computer;
 
-		for (let i = 0; i < this.fractions.length; i++) {
-			this.fractions[i].isActive = false;
-			if (i != index) {
-				comp.fraction = this.fractions[i].id;
+			for (let key in this.fractions) {
+				this.$set(this.fractions[key], 'isActive', false);
+				if (key == fraction) {
+					this.fractions[key].isActive = true;
+					user.fraction = key;
+					user.fractionName = this.fractions[key].name;
+				} else {
+					comp.fraction = key;
+					comp.fractionName = this.fractions[key].name;
+				}
 			}
-		}
-
-
-			fraction.isActive = true;
-
-			user.fraction = fraction.id;
 
 			this.gameSteps.fractionIsChoiced = true;
 		},
 		personChoice(fraction, person) {
 			let user = this.gamers.user,
-					comp = this.gamers.computer;
+					comp = this.gamers.computer,
+					compPersonsArray,
+					arrLength = Number,
+					index = Number;
+
+			if (comp.fraction !== 'pirates') {
+				compPersonsArray = this.fractions.company.persons;
+			} else {
+				compPersonsArray = this.fractions.pirates.persons;
+			}
+
+			arrLength = compPersonsArray.length;
+			index = this.random(0, arrLength - 1);
+
+			comp.person = compPersonsArray[index];
+			user.person = person;
 
 			this.gameSteps.personsIsChoiced = true;
 		},
-		startGame () { 
-			if (this.random(0, 1) == 1) {
-				this.gamers.computer.turn = false;
+		startGame () {
+			let chance = this.random(0, 1),
+					user = this.gamers.user,
+					comp = this.gamers.computer;
+
+			if (chance > 0) {
+				comp.turn = true;
 			}
 
-			if (this.gamers.computer.turn) {
-				this.gamers.computer.serviceMessage = 'Я хожу первым';
-				setTimeout(() => {
-					this.computerShot();
-				}, 2000);
+			if (user.fraction == 'pirates') {
+				user.serviceMessage = 'Сегодня мир увидит свободных людей!';
 			} else {
-				this.gamers.user.turn = true;
-				this.gamers.user.serviceMessage = 'Капитан, наши корабли уже на позиции! Стреляйте!';
+				user.serviceMessage = 'Пощады никому не давать, ранненых убить...';
 			}
+
+			if (comp.fraction == 'pirates') {
+				comp.serviceMessage = 'Никто не в праве посягать на нашу свободу!';
+			} else {
+				comp.serviceMessage = 'Мы потопим ваш никчемный флот!';
+			}
+
+			setTimeout(() => {
+
+				if (comp.turn) {
+					comp.serviceMessage = 'Мы выстрелим первыми!';
+					user.serviceMessage = '';
+					setTimeout(() => {
+						this.computerShot();
+					}, 2000);
+				} else {
+					user.turn = true;
+					user.serviceMessage = 'Орудия к бою готовы! Стреляйте!';
+					comp.serviceMessage = '';
+				}
+			}, 2000)
 
 			this.$set(this.gameSteps, 'isStarting', true);
 		},
 		exitGame () {
-			if (!this.gameSteps.isFinished) {
-				this.serviceMessage = 'Вы проиграли'
+			this.finishMesssage = 'Вы проиграли';
+			this.gameSteps.isFinished = true;
+		},
+		backToStart() {
+			for (let step in this.gameSteps) {
+				this.gameSteps[step] = false;
 			}
+			for (let gamer in this.gamers) {
+				this.gamers[gamer].fraction = '';
+				this.gamers[gamer].fractionName = '';
+				this.gamers[gamer].fractionPerson = '';
+			}
+
+			this.gamers.computer.shootMatrixAround = [];
 		},
 		shuffleShips () {
 			this.addShips(this.gamers.user);
@@ -122,6 +181,7 @@ var app = new Vue({
 		random(min, max) {
 			var rand = min - 0.5 + Math.random() * (max - min + 1)
 					rand = Math.round(rand);
+					rand = Math.abs(rand);
 					return rand;
 		},
 		addShips (gamer) {
@@ -150,7 +210,7 @@ var app = new Vue({
 		},
 		createCoordinates(n) {
 			let coords = {};
-			coords.direction = Math.abs(this.random(0, 1));
+			coords.direction = this.random(0, 1);
 
 			if (coords.direction == 1) {
 					coords.row = this.random(1, 10);
@@ -258,15 +318,13 @@ var app = new Vue({
 
 						luckyShots.ky = (Math.abs(luckyShots.firstHit[0] - luckyShots.nextHit[0]) == 1) ? 1 : 0;
 						luckyShots.kx = (Math.abs(luckyShots.firstHit[1] - luckyShots.nextHit[1]) == 1) ? 1 : 0;
-
 					}
-					
 				}
 
 				if (luckyShots.totalHits >= value) {
 					this.killShip(comp, user, row, col, value);
 				} else {
-					comp.serviceMessage = 'Попадание';
+					comp.serviceMessage = 'Попадание! Я стреляю ещё раз!';
 					this.setShootMatrixAround(row, col);
 				}
 
@@ -282,11 +340,11 @@ var app = new Vue({
 				this.computerShot();
 			} else {
 				this.$set(user.field[row], col, {value: -1, class: 'slip'});
-				setTimeout(() => {
-					comp.turn = false;
-					user.turn = true;
-				}, 1000);
-				comp.serviceMessage = 'Промах';
+				comp.serviceMessage = 'Промаx. Ход противника.';
+				user.serviceMessage = 'Наш ход';
+				
+				comp.turn = false;
+				user.turn = true;
 			}
 		},
 		userShot (row, col, info) {
@@ -315,7 +373,7 @@ var app = new Vue({
 						this.killShip(user, comp, row, col, value);
 
 					} else {
-						user.serviceMessage = 'Попадание';
+						user.serviceMessage = 'Есть попадание! Нужен ещё выстрел!';
 					}
 
 					this.$set(comp.field[row], col, {value: -3, class: 'cross'});
@@ -327,11 +385,12 @@ var app = new Vue({
 					comp.turn = true;
 					user.turn = false;
 
-					this.gamers.user.serviceMessage = 'Промах';
+					user.serviceMessage = 'Промах! Ход противника!';
+					comp.serviceMessage = 'Наш ход!';
 
 					setTimeout(() => {
 						this.computerShot();
-					}, 500);
+					}, 1500);
 					
 				}
 			}
@@ -457,9 +516,9 @@ var app = new Vue({
 			if (gamer.fleetSize === 0) {
 				this.gameSteps.isFinished = true;
 				if (this.gamers.user.turn) {
-					this.gamers.user.serviceMessage = 'Мы выиграли';
+					this.finishMesssage = 'Вы выиграли';
 				} else {
-					this.gamers.user.serviceMessage = 'Мы проиграли';
+					this.finishMesssage = 'Мы проиграли';
 				}
 			}
 		},

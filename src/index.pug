@@ -4,13 +4,19 @@ include pug/mixins/choice-screen
 include pug/mixins/game-screen
 
 append vars
-	//- ...
+	title Морской бой
 
 block content
 	#app.app-wrapper
 		template(v-if="!gameSteps.newGame")
 			+start-screen
-		template(v-else-if="!gameSteps.isChoiced")
+		template(v-else-if="!gameSteps.personsIsChoiced")
 			+choice-screen
-		template(v-else="!gameSteps.personsIsChoiced")
+		template(v-else-if="gameSteps.personsIsChoiced && !gameSteps.isFinished")
 			+game-screen
+		template(v-else-if="gameSteps.isFinished")
+			section.section
+				.section__cnt
+					h2 {{ finishMesssage }}
+					button.button(@click="backToStart()") В главное меню
+					button.button(@click="newGame()") Сыграть ещё раз

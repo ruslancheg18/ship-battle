@@ -29,9 +29,15 @@ body {
 	min-height: 768px;
 	text-align: left;
 	position: relative;
-	overflow: hidden;
 	scroll-behavior: smooth;
 	background: url(../images/bgs/main-bg.jpg) no-repeat center;
+}
+
+h2 {
+	font-size: 4rem;
+	text-align: center;
+	margin: 0 0 0.25em;
+	color: #fff;
 }
 
 img {
@@ -53,12 +59,13 @@ img {
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	padding: 2rem;
 }
 
 .button {
 	outline: none;
-	width: (382rem/16);
-	height: (110rem/16);
+	width: (329rem/16);
+	height: (58rem/16);
 	font-size: (24rem/16);
 	color: #181818;
 	background: url(../images/bgs/button-gold.png) no-repeat center / contain;
@@ -67,4 +74,12 @@ img {
 	font-weight: 700;
 	display: block;
 	margin: 0 auto;
+	box-shadow: 0px 1px 3rem 0 #ffc93e;
+	border-radius: 10px;
+	transition: box-shadow 0.5s, filter 0.5s;
+	margin-top: 2rem;
+	&:hover {
+		box-shadow: 0 1px 1rem 0 #ffc93e;
+		filter: grayscale(90%)
+	}
 }
