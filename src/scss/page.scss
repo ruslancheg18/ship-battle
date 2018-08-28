@@ -40,6 +40,10 @@ h2 {
 	color: #fff;
 }
 
+p {
+	font-size: 1rem;
+}
+
 img {
 	display: inline-block;
 	max-width: 100%;
@@ -81,5 +85,30 @@ img {
 	&:hover {
 		box-shadow: 0 1px 1rem 0 #ffc93e;
 		filter: grayscale(90%)
+	}
+}
+
+.statistics {
+	max-width: 600px;
+	color: #fff;
+	margin: 0 auto;
+	font-size: 1.25rem;
+	letter-spacing: 0.7px;
+	&__table {
+		color: #fff;
+		width: 100%;
+		table-layout: fixed;
+		font-size: 1em;
+		td {
+			padding: 0.75em 0.5rem;
+			border: 1px solid #fff;
+			&:nth-child(2) {
+				text-align: center;
+			}
+		}
+		tr:nth-child(odd) {
+			background-color: rgba(255, 255, 255, 0.75);
+			color: #000;
+		}
 	}
 }

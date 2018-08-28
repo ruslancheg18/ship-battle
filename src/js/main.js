@@ -10,8 +10,18 @@ var app = new Vue({
 			computer: {
 				shootMatrixAround: [],
 			},
-			user: {}
+			user: {
+				stats: {
+					turnCounter: 0,
+					shipsKilled: 0,
+					livingShips: 0,
+					gameTime: 0,
+				},
+				statsAreaNames: ['Всего ходов сделано', 'Кораблей противника потоплено', 'Корабли оставшиеся в строю', 'Время игры']
+			}
 		},
+		gameStartTime: '',
+		gameEndTime: '',
 		gameSteps: {
 			newGame: false,
 			isChoiced: false,
@@ -37,8 +47,7 @@ var app = new Vue({
 					hitting: ['Попадание зафиксировано. Нам нужен ещё один точный выстрел.', 'Наша эскадра непотляема! Огонь из всех орудий!', 'Готовьсь! Цельсь! Пли!']
 				}
 			}
-		},
-		finishMesssage: String
+		}
 	},
 	beforeMount() {
 		for (let gamer in this.gamers) {
@@ -70,14 +79,14 @@ var app = new Vue({
 					this.gamers[gamer].turn = false;
 				}
 			}
-
 			steps.newGame = true;
-			if (steps.isStarting) {
-				steps.isStarting = false;
-			}
 
 			if (steps.isFinished) {
 				steps.isFinished = false;
+				steps.isStarting = false;
+				for (let info in this.gamers.stats) {
+					this.gamers.stats[info] = 0;
+				}
 			}
 
 			this.gamers.user.serviceMessage = 'Всем приготовиться к бою!';
@@ -143,7 +152,7 @@ var app = new Vue({
 			}
 
 			setTimeout(() => {
-
+				this.gameStartTime = new Date(milliseconds);
 				if (comp.turn) {
 					comp.serviceMessage = 'Мы выстрелим первыми!';
 					user.serviceMessage = '';
@@ -160,6 +169,7 @@ var app = new Vue({
 			this.$set(this.gameSteps, 'isStarting', true);
 		},
 		exitGame () {
+			this.gameEndTime = new Date(milliseconds);
 			this.finishMesssage = 'Вы проиграли';
 			this.gameSteps.isFinished = true;
 		},
@@ -176,6 +186,7 @@ var app = new Vue({
 			this.gamers.computer.shootMatrixAround = [];
 		},
 		shuffleShips () {
+			this.gamers.user.stats.livingShips = 0;
 			this.addShips(this.gamers.user);
 		},
 		random(min, max) {
@@ -187,7 +198,6 @@ var app = new Vue({
 		addShips (gamer) {
 			gamer.field = emptyField();
 			gamer.fleetSize = 0;
-
 
 			fleetData.forEach((ship, i, arr) => {
 				let shipsQuantity = ship.quantity,
@@ -202,7 +212,7 @@ var app = new Vue({
 						var coords = this.createCoordinates(ship.size);
 						if (this.checkEmptyCell(gamer, ship, coords)) {
 							this.createShip(gamer, ship, coords);
-							shipsQuantity--
+							shipsQuantity--;
 						}
 					}
 				}
@@ -257,6 +267,8 @@ var app = new Vue({
 					cls = '';
 
 			if (gamer == this.gamers.user) {
+				gamer.stats.livingShips++;
+				
 				switch (ship.size) {
 					case 4:
 					cls = 'large';
@@ -296,11 +308,9 @@ var app = new Vue({
 
 
 			if (value > 0) {
-				// Кидаем клетки исключения
 				this.setExceptionsCells(user, row, col);
-				// Проверяем не кончились корабли противника
 				this.checkFinishGame(user);
-
+				
 				luckyShots.totalHits++;
 
 				if (index == 0) {
@@ -309,13 +319,10 @@ var app = new Vue({
 				}
 
 				if (luckyShots.kx == 0 && luckyShots.ky == 0) {
-							// Добавляем в счастливые выстрелы первое попадание
 					if (Object.keys(luckyShots.firstHit).length === 0) {
 						luckyShots.firstHit = [row, col];
 					} else {
-							// Добавляем в счастливые выстрелы второе попадание
 						luckyShots.nextHit = [row, col]
-
 						luckyShots.ky = (Math.abs(luckyShots.firstHit[0] - luckyShots.nextHit[0]) == 1) ? 1 : 0;
 						luckyShots.kx = (Math.abs(luckyShots.firstHit[1] - luckyShots.nextHit[1]) == 1) ? 1 : 0;
 					}
@@ -323,6 +330,7 @@ var app = new Vue({
 
 				if (luckyShots.totalHits >= value) {
 					this.killShip(comp, user, row, col, value);
+					user.stats.livingShips--;
 				} else {
 					comp.serviceMessage = 'Попадание! Я стреляю ещё раз!';
 					this.setShootMatrixAround(row, col);
@@ -354,6 +362,8 @@ var app = new Vue({
 					comp = this.gamers.computer,
 					user = this.gamers.user;
 
+			user.stats.turnCounter++;
+
 			if (user.turn) {
 				if (value > 0) {
 					if (direction == 1) {
@@ -371,6 +381,8 @@ var app = new Vue({
 						user.luckyShots.totalHits = value;
 
 						this.killShip(user, comp, row, col, value);
+						
+						user.stats.shipsKilled++
 
 					} else {
 						user.serviceMessage = 'Есть попадание! Нужен ещё выстрел!';
@@ -515,10 +527,15 @@ var app = new Vue({
 
 			if (gamer.fleetSize === 0) {
 				this.gameSteps.isFinished = true;
+
+				this.gameEndTime = new Date(milliseconds);
+
+				this.getGameTime();
+
 				if (this.gamers.user.turn) {
-					this.finishMesssage = 'Вы выиграли';
+					this.gamer.user.serviceMessage = 'Вы выиграли';
 				} else {
-					this.finishMesssage = 'Мы проиграли';
+					this.gamer.user.serviceMessage = 'Мы проиграли';
 				}
 			}
 		},
@@ -532,6 +549,11 @@ var app = new Vue({
 				x0: '',
 				y0: ''
 			};
+		}
+	},
+	computed: {
+		getGameTime() {
+			return this.gamers.user.stats.gameTime = this.gameEndTime - this.gameStartTime;
 		}
 	}
 });

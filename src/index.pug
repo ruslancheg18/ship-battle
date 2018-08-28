@@ -17,6 +17,11 @@ block content
 		template(v-else-if="gameSteps.isFinished")
 			section.section
 				.section__cnt
-					h2 {{ finishMesssage }}
+					h2 {{ gamers.user.serviceMesssage }}
+					.statistics
+						table.statistics__table
+							tr(v-for="(info, key, index) in gamers.user.stats")
+								td {{gamers.user.statsAreaNames[index]}}
+								td {{info}}
 					button.button(@click="backToStart()") В главное меню
 					button.button(@click="newGame()") Сыграть ещё раз
