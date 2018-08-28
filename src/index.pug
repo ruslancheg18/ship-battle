@@ -17,7 +17,7 @@ block content
 		template(v-else-if="gameSteps.isFinished")
 			section.section
 				.section__cnt
-					h2 {{ gamers.user.serviceMesssage }}
+					h2 {{ gamers.user.serviceMessage }}
 					.statistics
 						table.statistics__table
 							tr(v-for="(info, key, index) in gamers.user.stats")

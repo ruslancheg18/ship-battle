@@ -15,7 +15,7 @@ var app = new Vue({
 					turnCounter: 0,
 					shipsKilled: 0,
 					livingShips: 0,
-					gameTime: 0,
+					time: 0,
 				},
 				statsAreaNames: ['Всего ходов сделано', 'Кораблей противника потоплено', 'Корабли оставшиеся в строю', 'Время игры']
 			}
@@ -152,7 +152,7 @@ var app = new Vue({
 			}
 
 			setTimeout(() => {
-				this.gameStartTime = new Date(milliseconds);
+				this.gameStartTime = new Date();
 				if (comp.turn) {
 					comp.serviceMessage = 'Мы выстрелим первыми!';
 					user.serviceMessage = '';
@@ -169,8 +169,8 @@ var app = new Vue({
 			this.$set(this.gameSteps, 'isStarting', true);
 		},
 		exitGame () {
-			this.gameEndTime = new Date(milliseconds);
-			this.finishMesssage = 'Вы проиграли';
+			this.gameEndTime = new Date();
+			this.gamers.user.serviceMessage = 'Вы проиграли';
 			this.gameSteps.isFinished = true;
 		},
 		backToStart() {
@@ -522,20 +522,17 @@ var app = new Vue({
 
 			this.resetLuckyShots(user);
 		},
-		checkFinishGame (gamer) {
-			gamer.fleetSize--;
+		checkFinishGame (enemy) {
+			enemy.fleetSize--;
 
-			if (gamer.fleetSize === 0) {
+			if (enemy.fleetSize === 0) {
 				this.gameSteps.isFinished = true;
-
-				this.gameEndTime = new Date(milliseconds);
-
-				this.getGameTime();
+				this.gameEndTime = new Date();
 
 				if (this.gamers.user.turn) {
-					this.gamer.user.serviceMessage = 'Вы выиграли';
+					this.gamers.user.serviceMessage = 'Вы выиграли';
 				} else {
-					this.gamer.user.serviceMessage = 'Мы проиграли';
+					this.gamers.user.serviceMessage = 'Вы проиграли';
 				}
 			}
 		},
@@ -553,7 +550,31 @@ var app = new Vue({
 	},
 	computed: {
 		getGameTime() {
-			return this.gamers.user.stats.gameTime = this.gameEndTime - this.gameStartTime;
+			let difference = this.gameEndTime - this.gameStartTime,
+					seconds = parseInt((difference / 1000) % 60),
+					minutes = parseInt((difference / (1000 * 60)) % 60),
+					hours = parseInt((difference / (1000 * 60 * 60)) % 24);
+
+
+				if (hours > 0) {
+					hours = (hours < 10) ? "0" + hours : hours;
+					hours = hours + ' ч ';
+				} else {
+					hours = '';
+				}
+
+				if (minutes > 0) {
+					minutes = (minutes < 10) ? "0" + minutes : minutes;
+					minutes = minutes + ' мин ';
+				} else {
+					minutes = '';
+				}
+
+				seconds = (seconds < 10) ? "0" + seconds : seconds;
+
+
+			return this.gamers.user.stats.time = hours + minutes + seconds + ' сек';
+
 		}
 	}
 });
