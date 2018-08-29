@@ -20,8 +20,8 @@ var app = new Vue({
 				statsAreaNames: ['Всего ходов сделано', 'Кораблей противника потоплено', 'Корабли оставшиеся в строю', 'Время игры']
 			}
 		},
-		gameStartTime: '',
-		gameEndTime: '',
+		gameStartTime: 0,
+		// gameEndTime: '',
 		gameSteps: {
 			newGame: false,
 			isChoiced: false,
@@ -169,7 +169,7 @@ var app = new Vue({
 			this.$set(this.gameSteps, 'isStarting', true);
 		},
 		exitGame () {
-			this.gameEndTime = new Date();
+			this.getGameTime();
 			this.gamers.user.serviceMessage = 'Вы проиграли';
 			this.gameSteps.isFinished = true;
 		},
@@ -527,8 +527,7 @@ var app = new Vue({
 
 			if (enemy.fleetSize === 0) {
 				this.gameSteps.isFinished = true;
-				this.gameEndTime = new Date();
-
+				this.getGameTime();
 				if (this.gamers.user.turn) {
 					this.gamers.user.serviceMessage = 'Вы выиграли';
 				} else {
@@ -546,15 +545,12 @@ var app = new Vue({
 				x0: '',
 				y0: ''
 			};
-		}
-	},
-	computed: {
+		},
 		getGameTime() {
-			let difference = this.gameEndTime - this.gameStartTime,
+			let difference = new Date() - this.gameStartTime,
 					seconds = parseInt((difference / 1000) % 60),
 					minutes = parseInt((difference / (1000 * 60)) % 60),
 					hours = parseInt((difference / (1000 * 60 * 60)) % 24);
-
 
 				if (hours > 0) {
 					hours = (hours < 10) ? "0" + hours : hours;
@@ -570,11 +566,9 @@ var app = new Vue({
 					minutes = '';
 				}
 
-				seconds = (seconds < 10) ? "0" + seconds : seconds;
+			seconds = (seconds < 10) ? "0" + seconds : seconds;
 
-
-			return this.gamers.user.stats.time = hours + minutes + seconds + ' сек';
-
+			this.gamers.user.stats.time = hours + minutes + seconds + ' сек';
 		}
 	}
 });
